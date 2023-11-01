@@ -993,6 +993,7 @@ void mudclient_start_application(mudclient *mud, char *title) {
 
 	#ifdef SDL12
 	SDL_WM_SetCaption( "Runescape by Andrew Gower", NULL );
+	//Requires SDL_Image
 	//SDL_WM_SetIcon(IMG_Load("win/2003scape.png"),NULL);
 	#else
     uint32_t windowflags = SDL_WINDOW_SHOWN;
@@ -1062,7 +1063,6 @@ void mudclient_start_application(mudclient *mud, char *title) {
 #endif
 
     windowflags |= SDL_WINDOW_OPENGL;
-
     mud->gl_window = SDL_CreateWindow(
         title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, mud->game_width,
         mud->game_height, windowflags);
@@ -6556,12 +6556,14 @@ void mudclient_draw_item(mudclient *mud, int x, int y, int slot_width,
             game_data.items[certificate_item_id].mask, 0, 0, 0);
     }
 }
-
-//int main(int argc, char **argv) {
+#ifdef WIN9X
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     PSTR lpCmdLine, int nCmdShow) {
 	int argc; 
 	char **argv;
+#else
+int main(int argc, char **argv) {
+#endif
 #ifdef _3DS
     osSetSpeedupEnable(true);
 #endif

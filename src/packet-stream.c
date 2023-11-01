@@ -58,6 +58,7 @@ void init_packet_stream_global() { THREAT_LENGTH = strlen(SPOOKY_THREAT); }
 void on_signal_do_nothing(int dummy) { (void)dummy; }
 #endif
 
+#ifdef WIN9X
 static const char *
 inet_ntop4 (const u_char *src, char *dst, socklen_t size)
 {
@@ -180,6 +181,7 @@ inet_aton(cp_arg, addr)
 		addr->s_addr = htonl(val);
 	return (1);
 }
+#endif
 
 void packet_stream_new(PacketStream *packet_stream, mudclient *mud) {
     memset(packet_stream, 0, sizeof(PacketStream));
@@ -220,14 +222,8 @@ void packet_stream_new(PacketStream *packet_stream, mudclient *mud) {
     if (is_ip_address(mud->options->server)) {
         strcpy(server_ip, mud->options->server);
     } else {
-#ifdef WII
-        struct hostent *host_addr = net_gethostbyname(mud->options->server);
-
-        struct in_addr addr = {0};
-        memcpy(&addr, host_addr->h_addr_list[0], sizeof(struct in_addr));
-        strcpy(server_ip, inet_ntoa(addr));
-#elif WIN9X
-		struct hostent *host_addr = gethostbyname(mud->options->server);
+#ifndef WII
+        struct hostent *host_addr = gethostbyname(mud->options->server);
 
         struct in_addr addr = {0};
         memcpy(&addr, host_addr->h_addr_list[0], sizeof(struct in_addr));
@@ -263,8 +259,6 @@ void packet_stream_new(PacketStream *packet_stream, mudclient *mud) {
     }
 
 #ifdef WIN32
-<<<<<<< Updated upstream
-=======
     WSADATA wsa_data = {0};
     ret = WSAStartup(MAKEWORD(2, 2), &wsa_data);
 
@@ -272,12 +266,9 @@ void packet_stream_new(PacketStream *packet_stream, mudclient *mud) {
         fprintf(stderr, "WSAStartup: %d\n", ret);
         exit(1);
     }
-	#ifdef WIN9X
+
+    //ret = InetPton(AF_INET, server_ip, &server_addr.sin_addr);
 	ret = inet_aton(server_ip, &server_addr.sin_addr);
-	#else
->>>>>>> Stashed changes
-    ret = InetPton(AF_INET, server_ip, &server_addr.sin_addr);
-	#endif
 #else
     ret = inet_aton(server_ip, &server_addr.sin_addr);
 #endif
@@ -363,21 +354,6 @@ void packet_stream_new(PacketStream *packet_stream, mudclient *mud) {
                   sizeof(server_addr));
 
     if (ret == -1) {
-<<<<<<< Updated upstream
-#ifdef WIN32
-        if (WSAGetLastError() == WSAEWOULDBLOCK) {
-#else
-        if (errno == EINPROGRESS) {
-#endif
-            struct timeval timeout = {0};
-            timeout.tv_sec = 5;
-            timeout.tv_usec = 0;
-
-            fd_set write_fds;
-            FD_ZERO(&write_fds);
-            FD_SET(packet_stream->socket, &write_fds);
-
-=======
         struct timeval timeout = {0};
         timeout.tv_sec = 5;
         timeout.tv_usec = 0;
@@ -386,12 +362,15 @@ void packet_stream_new(PacketStream *packet_stream, mudclient *mud) {
         FD_ZERO(&write_fds);
         FD_SET(packet_stream->socket, &write_fds);
 
-        if (errno == EINPROGRESS || errno == 0) {
->>>>>>> Stashed changes
+#ifdef WIN32                                          
+        if (WSAGetLastError() == WSAEWOULDBLOCK) {    
+#else                                                 
+        if (errno == EINPROGRESS) {                   
+#endif            
             ret = select(packet_stream->socket + 1, NULL, &write_fds, NULL,
                          &timeout);
 
-            if (ret > 0) {
+            if (ret > 0 || errno == EINTR) {
                 socklen_t lon = sizeof(int);
                 int valopt = 0;
 
@@ -540,14 +519,10 @@ int packet_stream_write_bytes(PacketStream *packet_stream, int8_t *buffer,
     if (!packet_stream->closed) {
 #ifdef WII
         return net_write(packet_stream->socket, buffer + offset, length);
-<<<<<<< Updated upstream
-#elif defined(WIN32) || defined(__SWITCH__)
-        return send(packet_stream->socket, buffer + offset, length, 0);
-=======
 #elif defined(WIN32)
+		//Fixme?
         send(packet_stream->socket, buffer + offset, length, 0);
 		return 0;
->>>>>>> Stashed changes
 #else
         return write(packet_stream->socket, buffer + offset, length);
 #endif
@@ -941,17 +916,11 @@ int64_t packet_stream_get_long(PacketStream *packet_stream) {
 }
 
 void packet_stream_close(PacketStream *packet_stream) {
-    if (packet_stream->socket > -1) {
 #ifdef WII
-        net_close(packet_stream->socket);
-#elif defined(WIN32)
-        closesocket(packet_stream->socket);
+    net_close(packet_stream->socket);
 #else
-        close(packet_stream->socket);
+    close(packet_stream->socket);
 #endif
-
-        packet_stream->socket = -1;
-    }
 
     packet_stream->closed = 1;
 }
