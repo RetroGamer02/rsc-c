@@ -244,6 +244,218 @@ void mudclient_3ds_gl_frame_start(mudclient *mud, int clear) {
 void mudclient_3ds_gl_frame_end() { C3D_FrameEnd(0); }
 #endif
 #else
+#ifdef SDL12
+void get_sdl_keycodes(SDL_keysym *keysym, char *char_code, int *code) {
+    *char_code = -1;
+
+    switch (keysym->sym) {
+    case SDLK_LEFT:
+        *code = K_LEFT;
+        break;
+    case SDLK_RIGHT:
+        *code = K_RIGHT;
+        break;
+    case SDLK_UP:
+        *code = K_UP;
+        break;
+    case SDLK_DOWN:
+        *code = K_DOWN;
+        break;
+    case SDLK_PAGEUP:
+        *code = K_PAGE_UP;
+        break;
+    case SDLK_PAGEDOWN:
+        *code = K_PAGE_DOWN;
+        break;
+    case SDLK_HOME:
+        *code = K_HOME;
+        break;
+    case SDLK_F1:
+        *code = K_F1;
+        break;
+    case SDLK_ESCAPE:
+        *code = K_ESCAPE;
+        break;
+    /*case SDLK_RETURN:
+        *code = K_ENTER;
+        break;*/
+    // TODO: Swallow "bad inputs" by default? ie. numlock, capslock
+    case SDLK_NUMLOCK:
+        *code = -1;
+        *char_code = 1;
+        break;
+    case SDLK_CAPSLOCK:
+        *code = -1;
+        *char_code = 1;
+        break;
+    case SDLK_KP_DIVIDE:
+        *code = K_FWD_SLASH;
+        *char_code = K_FWD_SLASH;
+        break;
+    case SDLK_KP_MULTIPLY:
+        *code = K_ASTERISK;
+        *char_code = K_ASTERISK;
+        break;
+    case SDLK_KP_MINUS:
+        *code = K_MINUS;
+        *char_code = K_MINUS;
+        break;
+    case SDLK_KP_PLUS:
+        *code = K_PLUS;
+        *char_code = K_PLUS;
+        break;
+    case SDLK_KP_PERIOD:
+        *code = K_PERIOD;
+        *char_code = K_PERIOD;
+        break;
+    case SDLK_KP_ENTER:
+        *code = K_ENTER;
+        *char_code = K_ENTER;
+        break;
+    case SDLK_KP0:
+        *code = K_0;
+        *char_code = K_0;
+        break;
+    case SDLK_KP1:
+        *code = K_1;
+        *char_code = K_1;
+        break;
+    case SDLK_KP2:
+        *code = K_2;
+        *char_code = K_2;
+        break;
+    case SDLK_KP3:
+        *code = K_3;
+        *char_code = K_3;
+        break;
+    case SDLK_KP4:
+        *code = K_4;
+        *char_code = K_4;
+        break;
+    case SDLK_KP5:
+        *code = K_5;
+        *char_code = K_5;
+        break;
+    case SDLK_KP6:
+        *code = K_6;
+        *char_code = K_6;
+        break;
+    case SDLK_KP7:
+        *code = K_7;
+        *char_code = K_7;
+        break;
+    case SDLK_KP8:
+        *code = K_8;
+        *char_code = K_8;
+        break;
+    case SDLK_KP9:
+        *code = K_9;
+        *char_code = K_9;
+        break;
+    case SDLK_LSHIFT:
+    case SDLK_RSHIFT:
+        //Ignore these on SDL12
+        break;
+    default:
+        *char_code = keysym->sym;
+
+        switch (keysym->scancode) {
+        case SDLK_TAB:
+            *code = K_TAB;
+            break;
+        case SDLK_1:
+            *code = K_1;
+            break;
+        case SDLK_2:
+            *code = K_2;
+            break;
+        case SDLK_3:
+            *code = K_3;
+            break;
+        case SDLK_4:
+            *code = K_4;
+            break;
+        case SDLK_5:
+            *code = K_5;
+            break;
+        default:
+            *code = *char_code;
+            break;
+        }
+
+        if (keysym->mod & KMOD_SHIFT) {
+            if (*char_code >= 'a' && *char_code <= 'z') {
+                *char_code -= 32;
+            } else {
+                switch (*char_code) {
+                case ';':
+                    *char_code = ':';
+                    break;
+                case '`':
+                    *char_code = '~';
+                    break;
+                case '1':
+                    *char_code = '!';
+                    break;
+                case '2':
+                    *char_code = '@';
+                    break;
+                case '3':
+                    *char_code = '#';
+                    break;
+                case '4':
+                    *char_code = '$';
+                    break;
+                case '5':
+                    *char_code = '%';
+                    break;
+                case '6':
+                    *char_code = '^';
+                    break;
+                case '7':
+                    *char_code = '&';
+                    break;
+                case '8':
+                    *char_code = '*';
+                    break;
+                case '9':
+                    *char_code = '(';
+                    break;
+                case '0':
+                    *char_code = ')';
+                    break;
+                case '-':
+                    *char_code = '_';
+                    break;
+                case '=':
+                    *char_code = '+';
+                    break;
+                case '[':
+                    *char_code = '{';
+                    break;
+                case ']':
+                    *char_code = '}';
+                    break;
+                case '\\':
+                    *char_code = '|';
+                    break;
+                case ',':
+                    *char_code = '<';
+                    break;
+                case '.':
+                    *char_code = '>';
+                    break;
+                case '/':
+                    *char_code = '?';
+                    break;
+                }
+            }
+        }
+
+        break;
+    }
+}
+#else
 void get_sdl_keycodes(SDL_Keysym *keysym, char *char_code, int *code) {
     *char_code = -1;
 
@@ -451,6 +663,7 @@ void get_sdl_keycodes(SDL_Keysym *keysym, char *char_code, int *code) {
     }
 }
 #endif
+#endif
 
 void mudclient_new(mudclient *mud) {
     memset(mud, 0, sizeof(mudclient));
@@ -520,7 +733,11 @@ void mudclient_resize(mudclient *mud) {
     SDL_FreeSurface(mud->screen);
     SDL_FreeSurface(mud->pixel_surface);
 
+    #ifdef SDL12
+    mud->screen = SDL_GetVideoSurface();
+    #else
     mud->screen = SDL_GetWindowSurface(mud->window);
+    #endif
 
     mud->pixel_surface =
         SDL_CreateRGBSurface(0, mud->game_width, mud->game_height, 32, 0xff0000,
@@ -764,7 +981,9 @@ void mudclient_start_application(mudclient *mud, char *title) {
         wanted_audio.silence = 0;
         wanted_audio.samples = 1024;
 
+		#ifndef SDL12
         wanted_audio.callback = NULL;
+        #endif
 
         if (SDL_OpenAudio(&wanted_audio, NULL) < 0) {
             fprintf(stderr, "SDL_OpenAudio(): %s\n", SDL_GetError());
@@ -772,28 +991,49 @@ void mudclient_start_application(mudclient *mud, char *title) {
         }
     }
 
+	#ifdef SDL12
+	SDL_WM_SetCaption( "Runescape by Andrew Gower", NULL );
+	//SDL_WM_SetIcon(IMG_Load("win/2003scape.png"),NULL);
+	#else
     uint32_t windowflags = SDL_WINDOW_SHOWN;
+    #endif
 
 #if !defined(WII) && !defined(_3DS)
-    windowflags |= SDL_WINDOW_RESIZABLE;
+    
 #endif
 
 #ifdef RENDER_SW
+	#ifdef SDL12
+	mud->screen = SDL_SetVideoMode(mud->game_width, mud->game_height, 32, SDL_HWSURFACE | SDL_RESIZABLE);
+	#else
+	windowflags |= SDL_WINDOW_RESIZABLE;
     mud->window =
         SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                         mud->game_width, mud->game_height, windowflags);
+                         mud->game_width, mud->game_height, SDL_WINDOW_SHOWN);
+    #endif
 
     mudclient_resize(mud);
 #endif
-
+	#ifndef SDL12
     mud->default_cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
     mud->hand_cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND);
-
+	#endif
+	
 #ifdef RENDER_GL
     /*if (IMG_Init(IMG_INIT_PNG) == 0) {
         fprintf(stderr, "unable to initialize sdl_image: %s\n", IMG_GetError());
     }*/
+#ifdef SDL12
+    mud->screen = SDL_SetVideoMode(mud->game_width, mud->game_height, 32, SDL_OPENGL | SDL_RESIZABLE);
 
+    //Check for error
+    GLenum error = glGetError();
+    if( error != GL_NO_ERROR )
+    {
+        printf( "Error initializing OpenGL! %s\n", gluErrorString( error ) );
+        return false;
+    }
+#else
 #ifdef EMSCRIPTEN
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
@@ -835,6 +1075,7 @@ void mudclient_start_application(mudclient *mud, char *title) {
     }
 
     SDL_GL_MakeCurrent(mud->gl_window, context);
+#endif
 
     glewExperimental = GL_TRUE;
 
@@ -1372,7 +1613,11 @@ void mudclient_draw_loading_progress(mudclient *mud, int percent, char *text) {
     if (mud->gl_last_swap == 0 || get_ticks() - mud->gl_last_swap >= 16) {
         mudclient_poll_events(mud);
         surface_draw(mud->surface);
+        #ifdef SDL12
+        SDL_GL_SwapBuffers();
+        #else
         SDL_GL_SwapWindow(mud->gl_window);
+        #endif
         mud->gl_last_swap = get_ticks();
     } else {
         surface_gl_reset_context(mud->surface);
@@ -2271,7 +2516,11 @@ void mudclient_login(mudclient *mud, char *username, char *password,
         surface_draw(mud->surface);
 
 #ifdef RENDER_GL
+        #ifdef SDL12
+        SDL_GL_SwapBuffers();
+        #else
         SDL_GL_SwapWindow(mud->gl_window);
+        #endif
 #elif defined(RENDER_3DS_GL)
         mudclient_3ds_gl_frame_end();
 #endif
@@ -2834,6 +3083,18 @@ void mudclient_start_game(mudclient *mud) {
     mudclient_reset_login_screen(mud);
     mudclient_render_login_scene_sprites(mud);
 
+#if !defined(WII) && !defined(_3DS)
+#ifdef RENDER_SW
+	#ifndef SDL12
+    SDL_SetWindowResizable(mud->window, 1);
+    #endif
+#elif RENDER_GL
+	#ifndef SDL12
+    SDL_SetWindowResizable(mud->gl_window, 1);
+    #endif
+#endif
+#endif
+
     free(surface_texture_pixels);
     surface_texture_pixels = NULL;
 }
@@ -2923,14 +3184,10 @@ int mudclient_load_next_region(mudclient *mud, int lx, int ly) {
 
 #ifdef RENDER_3DS_GL
     mudclient_3ds_gl_frame_start(mud, 0);
-#endif
-
     surface_draw(mud->surface);
-
-#ifdef RENDER_GL
-    SDL_GL_SwapWindow(mud->gl_window);
-#elif defined(RENDER_3DS_GL)
     mudclient_3ds_gl_frame_end();
+#else
+    surface_draw(mud->surface);
 #endif
 
     int ax = mud->region_x;
@@ -4977,12 +5234,61 @@ void mudclient_draw(mudclient *mud) {
     } else if (mud->logged_in == 1) {
         mud->surface->draw_string_shadow = 1;
         mudclient_draw_game(mud);
-#ifdef RENDER_GL
-        SDL_GL_SwapWindow(mud->gl_window);
-#elif defined(RENDER_3DS_GL)
+#ifdef RENDER_3DS_GL
         mudclient_3ds_gl_frame_end();
 #endif
     }
+
+#ifdef RENDER_GL
+    #ifdef SDL12
+        SDL_GL_SwapBuffers();
+        #else
+        SDL_GL_SwapWindow(mud->gl_window);
+        #endif
+#endif
+}
+
+void mudclient_sdl1_on_resize(mudclient *mud,int width, int height){
+    int new_width = width;
+    int new_height = height;
+    if ((SDL_SetVideoMode(width, height, 32, SDL_OPENGL | SDL_RESIZABLE)) == NULL){
+        return;
+    }
+    mud->game_width = new_width;
+    mud->game_height = new_height;
+
+    if (mud->surface != NULL) {
+#ifdef RENDER_GL
+        // TODO we actually don't need to do this since we only generate
+        // the login scenes on boot
+        // surface_gl_create_framebuffer(mud->surface);
+#endif
+
+        if (mudclient_is_ui_scaled(mud)) {
+            mud->surface->width = new_width / 2;
+            mud->surface->height = new_height / 2;
+        } else {
+            mud->surface->width = new_width;
+            mud->surface->height = new_height;
+        }
+
+        surface_reset_bounds(mud->surface);
+    }
+
+    if (mud->scene != NULL) {
+#ifdef RENDER_SW
+        free(mud->scene->scanlines);
+#endif
+
+        // TODO change 12 to bar height - 1
+        scene_set_bounds(mud->scene, new_width, new_height - 12);
+
+#ifdef RENDER_GL
+        mudclient_update_fov(mud);
+#endif
+    }
+
+    mudclient_resize(mud);
 }
 
 void mudclient_on_resize(mudclient *mud) {
@@ -4993,14 +5299,22 @@ void mudclient_on_resize(mudclient *mud) {
     new_width = get_canvas_width();
     new_height = get_canvas_height();
 #ifdef RENDER_SW
+	#ifndef SDL12
     SDL_SetWindowSize(mud->window, new_width, new_height);
+    #endif
 #elif defined(RENDER_GL)
+	#ifndef SDL12
     SDL_SetWindowSize(mud->gl_window, new_width, new_height);
+    #endif
 #endif
 #elif defined(RENDER_GL) && !defined(_3DS) && !defined(WII)
+    #ifndef SDL12
     SDL_GetWindowSize(mud->gl_window, &new_width, &new_height);
+	#endif
 #elif defined(RENDER_SW) && !defined(_3DS) && !defined(WII)
+	#ifndef SDL12
     SDL_GetWindowSize(mud->window, &new_width, &new_height);
+	#endif
 #endif
 
     mud->game_width = new_width;
@@ -5468,6 +5782,7 @@ void mudclient_poll_events(mudclient *mud) {
             mudclient_mouse_released(mud, event.button.x, event.button.y,
                                      event.button.button);
             break;
+        #ifndef SDL12
         case SDL_MOUSEWHEEL:
             if (mud->options->mouse_wheel) {
                 if (event.wheel.y != 0) {
@@ -5496,6 +5811,7 @@ void mudclient_poll_events(mudclient *mud) {
                                      (int)(event.tfinger.y * MUD_HEIGHT),
                                      curMouseBtn);
             break;
+		#endif
 #ifdef __SWITCH__
         case SDL_JOYBUTTONDOWN:
             switch (event.jbutton.button) {
@@ -5629,11 +5945,17 @@ void mudclient_poll_events(mudclient *mud) {
             }
             break;
 #endif
+		#ifdef SDL12
+        case SDL_VIDEORESIZE:
+            mudclient_sdl1_on_resize(mud, event.resize.w, event.resize.h);
+            break;
+        #else
         case SDL_WINDOWEVENT:
             if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
                 mudclient_on_resize(mud);
             }
             break;
+        #endif
         }
     }
 #endif
@@ -6235,7 +6557,11 @@ void mudclient_draw_item(mudclient *mud, int x, int y, int slot_width,
     }
 }
 
-int main(int argc, char **argv) {
+//int main(int argc, char **argv) {
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
+    PSTR lpCmdLine, int nCmdShow) {
+	int argc; 
+	char **argv;
 #ifdef _3DS
     osSetSpeedupEnable(true);
 #endif
