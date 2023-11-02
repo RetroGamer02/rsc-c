@@ -933,16 +933,6 @@ void mudclient_start_application(mudclient *mud, char *title) {
     HIDUSER_EnableGyroscope();
 #else
 
-#ifdef WIN32
-    WSADATA wsa_data = {0};
-    int ret = WSAStartup(MAKEWORD(2, 2), &wsa_data);
-
-    if (ret < 0) {
-        fprintf(stderr, "WSAStartup() error: %d\n", WSAGetLastError());
-        exit(1);
-    }
-#endif
-
 #ifdef __SWITCH__
     Result romfs_res = romfsInit();
 
@@ -5251,9 +5241,15 @@ void mudclient_draw(mudclient *mud) {
 void mudclient_sdl1_on_resize(mudclient *mud,int width, int height){
     int new_width = width;
     int new_height = height;
+	#ifdef RENDER_SW
+	if ((SDL_SetVideoMode(width, height, 32, SDL_HWSURFACE | SDL_RESIZABLE)) == NULL){
+        return;
+    }
+	#else
     if ((SDL_SetVideoMode(width, height, 32, SDL_OPENGL | SDL_RESIZABLE)) == NULL){
         return;
     }
+	#endif
     mud->game_width = new_width;
     mud->game_height = new_height;
 

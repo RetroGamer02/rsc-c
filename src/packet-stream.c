@@ -213,6 +213,16 @@ void packet_stream_new(PacketStream *packet_stream, mudclient *mud) {
     }
 #endif
 
+#ifdef WIN32
+	WSADATA wsa_data = {0};
+    ret = WSAStartup(MAKEWORD(2, 2), &wsa_data);
+
+    if (ret != 0) {
+        fprintf(stderr, "WSAStartup: %d\n", ret);
+        exit(1);
+    }
+#endif
+
     struct sockaddr_in server_addr = {0};
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(mud->options->port);
@@ -222,11 +232,19 @@ void packet_stream_new(PacketStream *packet_stream, mudclient *mud) {
     if (is_ip_address(mud->options->server)) {
         strcpy(server_ip, mud->options->server);
     } else {
-#ifndef WII
+#ifdef WII
+        struct hostent *host_addr = net_gethostbyname(mud->options->server);
+
+        struct in_addr addr = {0};
+		if (host_addr)
+			memcpy(&addr, host_addr->h_addr_list[0], sizeof(struct in_addr));
+        strcpy(server_ip, inet_ntoa(addr));
+#elif WIN9X
         struct hostent *host_addr = gethostbyname(mud->options->server);
 
         struct in_addr addr = {0};
-        memcpy(&addr, host_addr->h_addr_list[0], sizeof(struct in_addr));
+		if (host_addr)
+			memcpy(&addr, host_addr->h_addr_list[0], sizeof(struct in_addr));
         strcpy(server_ip, inet_ntoa(addr));
 #else
         struct addrinfo hints = {0};
@@ -259,16 +277,11 @@ void packet_stream_new(PacketStream *packet_stream, mudclient *mud) {
     }
 
 #ifdef WIN32
-    WSADATA wsa_data = {0};
-    ret = WSAStartup(MAKEWORD(2, 2), &wsa_data);
-
-    if (ret != 0) {
-        fprintf(stderr, "WSAStartup: %d\n", ret);
-        exit(1);
-    }
-
-    //ret = InetPton(AF_INET, server_ip, &server_addr.sin_addr);
+	#ifdef WIN9X
 	ret = inet_aton(server_ip, &server_addr.sin_addr);
+	#else
+    ret = InetPton(AF_INET, server_ip, &server_addr.sin_addr);
+	#endif
 #else
     ret = inet_aton(server_ip, &server_addr.sin_addr);
 #endif
