@@ -984,7 +984,7 @@ void mudclient_start_application(mudclient *mud, char *title) {
 	#ifdef SDL12
 	SDL_WM_SetCaption( "Runescape by Andrew Gower", NULL );
 	//Requires SDL_Image
-	//SDL_WM_SetIcon(IMG_Load("win/2003scape.png"),NULL);
+	SDL_WM_SetIcon(IMG_Load("win/2003scape.png"),NULL);
 	#else
     uint32_t windowflags = SDL_WINDOW_SHOWN;
     #endif
